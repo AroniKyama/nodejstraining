@@ -7,33 +7,53 @@ var port = 3000;
 mongoose.Promise = global.Promise;
 mongoose.connect("mongodb://localhost:27017/node-demo");
 
-//body-parser middleware
+//app config
+app.set("view engine","ejs");
+app.use(express.static("public"));
+
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//schema
+//mangoose/model config
 var nameSchema = new mongoose.Schema({
     firstName: String,
-    lastNameName: String
+    lastName: String
   });
 
   var User = mongoose.model("User", nameSchema);
+  
 
-
+//routes
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/index.html");
+    res.render("index");
 });
 
-app.post("/addname", (req, res) => {
-    var myData = new User(req.body);
-    myData.save()
-      .then(item => {
-        res.send("item saved to database");
-      })
-      .catch(err => {
-        res.status(400).send("unable to save to database");
-      });
+app.post("/users", (req, res) => {
+  var myData = new User(req.body);
+  myData.save()
+    .then(item => {
+      console.log("item saved to database");
+      res.render("userlist");
+    })
+    .catch(err => {
+      console.log("unable to save to database");
+    });
+});
+
+app.get("/users",(req,res)=>{
+  User.find({},function(err,users){
+    if(err){
+      console.log("error");
+    }
+    else{
+      res.render("userlist", {"users": users});
+    }
   });
+ 
+})
+
+
  
 app.listen(port, () => {
   console.log("Server listening on port " + port);
